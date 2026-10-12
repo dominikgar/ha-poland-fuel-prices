@@ -1,0 +1,16 @@
+{
+  "domain": "poland_fuel_prices",
+  "name": "Poland Fuel Prices",
+  "version": "2.0.1",
+  "config_flow": true,
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "requirements": [
+    "beautifulsoup4==4.13.3"
+  ],
+  "codeowners": [
+    "@dominikgar"
+  ],
+  "documentation": "https://github.com/dominikgar/ha-poland-fuel-prices",
+  "issue_tracker": "https://github.com/dominikgar/ha-poland-fuel-prices/issues"
+}

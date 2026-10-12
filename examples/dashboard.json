@@ -1,0 +1,309 @@
+{
+  "title": "Ceny paliw",
+  "views": [
+    {
+      "title": "Ceny i limity",
+      "path": "ceny",
+      "icon": "mdi:gas-station",
+      "cards": [
+        {
+          "type": "markdown",
+          "content": "# Ceny paliw w Polsce\nOficjalne limity: Ministerstwo Energii. Średnie rynkowe: AutoCentrum. Wszystkie ceny w zł/l.\n\n**Odświeżanie co godzinę.** Zapowiedziany limit jest publikowaną stawką na przyszły okres. Regionalne minimum i maksimum dotyczą średnich wojewódzkich."
+        },
+        {
+          "type": "markdown",
+          "title": "Ostatnie udane pobranie",
+          "content": "**Ministerstwo Energii:** {{ as_local(as_datetime(states('sensor.poland_fuel_prices_government_last_success'))).strftime('%d.%m.%Y %H:%M:%S') if has_value('sensor.poland_fuel_prices_government_last_success') else 'brak udanego pobrania' }}\n\n**AutoCentrum:** {{ as_local(as_datetime(states('sensor.poland_fuel_prices_market_last_success'))).strftime('%d.%m.%Y %H:%M:%S') if has_value('sensor.poland_fuel_prices_market_last_success') else 'brak udanego pobrania' }}\n\nCzas lokalny HA. Czas pobrania strony może różnić się od daty aktualizacji danych u wydawcy."
+        },
+        {
+          "type": "entities",
+          "title": "Limity obowiązujące",
+          "show_header_toggle": false,
+          "entities": [
+            {
+              "entity": "sensor.poland_fuel_prices_pb_gov_max",
+              "name": "Pb95"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_pbp_gov_max",
+              "name": "Pb98"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_on_gov_max",
+              "name": "ON"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_pb_gov_max",
+              "attribute": "valid_from",
+              "name": "Obowiązuje od"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_pb_gov_max",
+              "attribute": "valid_to",
+              "name": "Obowiązuje do"
+            }
+          ]
+        },
+        {
+          "type": "entities",
+          "title": "Limity zapowiedziane",
+          "show_header_toggle": false,
+          "entities": [
+            {
+              "entity": "sensor.poland_fuel_prices_pb_gov_next",
+              "name": "Pb95"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_pbp_gov_next",
+              "name": "Pb98"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_on_gov_next",
+              "name": "ON"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_pb_gov_next",
+              "attribute": "valid_from",
+              "name": "Obowiązuje od"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_pb_gov_next",
+              "attribute": "valid_to",
+              "name": "Obowiązuje do"
+            }
+          ]
+        },
+        {
+          "type": "entities",
+          "title": "Średnia krajowa",
+          "show_header_toggle": false,
+          "entities": [
+            {
+              "entity": "sensor.poland_fuel_prices_pb_avg",
+              "name": "Pb95"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_pbp_avg",
+              "name": "Pb98"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_on_avg",
+              "name": "ON"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_onp_avg",
+              "name": "ON+"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_lpg_avg",
+              "name": "LPG"
+            }
+          ]
+        },
+        {
+          "type": "entities",
+          "title": "Aktualność — Ministerstwo Energii",
+          "show_header_toggle": false,
+          "entities": [
+            {
+              "entity": "sensor.poland_fuel_prices_government_last_success",
+              "name": "Ostatnie udane pobranie"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_government_last_attempt",
+              "name": "Ostatnia próba odświeżenia"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_government_status",
+              "name": "Status pobierania"
+            }
+          ]
+        },
+        {
+          "type": "entities",
+          "title": "Aktualność — AutoCentrum",
+          "show_header_toggle": false,
+          "entities": [
+            {
+              "entity": "sensor.poland_fuel_prices_market_last_success",
+              "name": "Ostatnie udane pobranie"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_market_last_attempt",
+              "name": "Ostatnia próba odświeżenia"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_market_status",
+              "name": "Status pobierania"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_pb_avg",
+              "attribute": "source_updated_text",
+              "name": "Aktualizacja danych u źródła"
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "entity": "button.poland_fuel_prices_refresh",
+          "name": "Odśwież dane",
+          "icon": "mdi:refresh",
+          "tap_action": {
+            "action": "perform-action",
+            "perform_action": "button.press",
+            "target": {
+              "entity_id": "button.poland_fuel_prices_refresh"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Województwa",
+      "path": "wojewodztwa",
+      "icon": "mdi:map",
+      "cards": [
+        {
+          "type": "entities",
+          "title": "Pb95 — średnie wojewódzkie",
+          "show_header_toggle": false,
+          "entities": [
+            {
+              "entity": "sensor.poland_fuel_prices_pb_regional_min",
+              "name": "Najniższa średnia"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_pb_regional_max",
+              "name": "Najwyższa średnia"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_pb_regional_min",
+              "attribute": "regions",
+              "name": "Najtaniej — województwa"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_pb_regional_max",
+              "attribute": "regions",
+              "name": "Najdrożej — województwa"
+            }
+          ]
+        },
+        {
+          "type": "entities",
+          "title": "Pb98 — średnie wojewódzkie",
+          "show_header_toggle": false,
+          "entities": [
+            {
+              "entity": "sensor.poland_fuel_prices_pbp_regional_min",
+              "name": "Najniższa średnia"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_pbp_regional_max",
+              "name": "Najwyższa średnia"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_pbp_regional_min",
+              "attribute": "regions",
+              "name": "Najtaniej — województwa"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_pbp_regional_max",
+              "attribute": "regions",
+              "name": "Najdrożej — województwa"
+            }
+          ]
+        },
+        {
+          "type": "entities",
+          "title": "ON — średnie wojewódzkie",
+          "show_header_toggle": false,
+          "entities": [
+            {
+              "entity": "sensor.poland_fuel_prices_on_regional_min",
+              "name": "Najniższa średnia"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_on_regional_max",
+              "name": "Najwyższa średnia"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_on_regional_min",
+              "attribute": "regions",
+              "name": "Najtaniej — województwa"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_on_regional_max",
+              "attribute": "regions",
+              "name": "Najdrożej — województwa"
+            }
+          ]
+        },
+        {
+          "type": "entities",
+          "title": "ON+ — średnie wojewódzkie",
+          "show_header_toggle": false,
+          "entities": [
+            {
+              "entity": "sensor.poland_fuel_prices_onp_regional_min",
+              "name": "Najniższa średnia"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_onp_regional_max",
+              "name": "Najwyższa średnia"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_onp_regional_min",
+              "attribute": "regions",
+              "name": "Najtaniej — województwa"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_onp_regional_max",
+              "attribute": "regions",
+              "name": "Najdrożej — województwa"
+            }
+          ]
+        },
+        {
+          "type": "entities",
+          "title": "LPG — średnie wojewódzkie",
+          "show_header_toggle": false,
+          "entities": [
+            {
+              "entity": "sensor.poland_fuel_prices_lpg_regional_min",
+              "name": "Najniższa średnia"
+            },
+            {
+              "entity": "sensor.poland_fuel_prices_lpg_regional_max",
+              "name": "Najwyższa średnia"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_lpg_regional_min",
+              "attribute": "regions",
+              "name": "Najtaniej — województwa"
+            },
+            {
+              "type": "attribute",
+              "entity": "sensor.poland_fuel_prices_lpg_regional_max",
+              "attribute": "regions",
+              "name": "Najdrożej — województwa"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
