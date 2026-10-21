@@ -11,6 +11,34 @@
           "content": "# Ceny paliw w Polsce\nOficjalne limity: Ministerstwo Energii. Średnie rynkowe: AutoCentrum. Wszystkie ceny w zł/l.\n\n**Odświeżanie co godzinę.** Zapowiedziany limit jest publikowaną stawką na przyszły okres. Regionalne minimum i maksimum dotyczą średnich wojewódzkich."
         },
         {
+          "type": "conditional",
+          "conditions": [
+            {
+              "entity": "sensor.poland_fuel_prices_market_status",
+              "state_not": "ok"
+            }
+          ],
+          "card": {
+            "type": "markdown",
+            "title": "AutoCentrum — brak aktualnego pobrania",
+            "content": "{% if is_state('sensor.poland_fuel_prices_market_status', 'stale') %}**Wyświetlane ceny pochodzą z ostatniego udanego pobrania.** Nie udało się potwierdzić aktualnych danych u źródła. Ceny z pamięci podręcznej są pokazywane maksymalnie przez 24 godziny; daty ważności limitów nadal obowiązują.{% else %}**Źródło jest niedostępne i nie ma dostatecznie świeżych danych.** Ceny wrócą automatycznie po udanym pobraniu.{% endif %}\n\nOstatnie udane pobranie: {{ as_local(as_datetime(states('sensor.poland_fuel_prices_market_last_success'))).strftime('%d.%m.%Y %H:%M:%S') if has_value('sensor.poland_fuel_prices_market_last_success') else 'brak' }}."
+          }
+        },
+        {
+          "type": "conditional",
+          "conditions": [
+            {
+              "entity": "sensor.poland_fuel_prices_government_status",
+              "state_not": "ok"
+            }
+          ],
+          "card": {
+            "type": "markdown",
+            "title": "Ministerstwo Energii — brak aktualnego pobrania",
+            "content": "{% if is_state('sensor.poland_fuel_prices_government_status', 'stale') %}**Wyświetlane ceny pochodzą z ostatniego udanego pobrania.** Nie udało się potwierdzić aktualnych danych u źródła. Ceny z pamięci podręcznej są pokazywane maksymalnie przez 24 godziny; daty ważności limitów nadal obowiązują.{% else %}**Źródło jest niedostępne i nie ma dostatecznie świeżych danych.** Ceny wrócą automatycznie po udanym pobraniu.{% endif %}\n\nOstatnie udane pobranie: {{ as_local(as_datetime(states('sensor.poland_fuel_prices_government_last_success'))).strftime('%d.%m.%Y %H:%M:%S') if has_value('sensor.poland_fuel_prices_government_last_success') else 'brak' }}."
+          }
+        },
+        {
           "type": "markdown",
           "title": "Ostatnie udane pobranie",
           "content": "**Ministerstwo Energii:** {{ as_local(as_datetime(states('sensor.poland_fuel_prices_government_last_success'))).strftime('%d.%m.%Y %H:%M:%S') if has_value('sensor.poland_fuel_prices_government_last_success') else 'brak udanego pobrania' }}\n\n**AutoCentrum:** {{ as_local(as_datetime(states('sensor.poland_fuel_prices_market_last_success'))).strftime('%d.%m.%Y %H:%M:%S') if has_value('sensor.poland_fuel_prices_market_last_success') else 'brak udanego pobrania' }}\n\nCzas lokalny HA. Czas pobrania strony może różnić się od daty aktualizacji danych u wydawcy."
@@ -194,6 +222,34 @@
               "name": "Najdrożej — województwa"
             }
           ]
+        },
+        {
+          "type": "conditional",
+          "conditions": [
+            {
+              "entity": "sensor.poland_fuel_prices_market_status",
+              "state_not": "ok"
+            }
+          ],
+          "card": {
+            "type": "markdown",
+            "title": "AutoCentrum — brak aktualnego pobrania",
+            "content": "{% if is_state('sensor.poland_fuel_prices_market_status', 'stale') %}**Wyświetlane ceny pochodzą z ostatniego udanego pobrania.** Nie udało się potwierdzić aktualnych danych u źródła. Ceny z pamięci podręcznej są pokazywane maksymalnie przez 24 godziny; daty ważności limitów nadal obowiązują.{% else %}**Źródło jest niedostępne i nie ma dostatecznie świeżych danych.** Ceny wrócą automatycznie po udanym pobraniu.{% endif %}\n\nOstatnie udane pobranie: {{ as_local(as_datetime(states('sensor.poland_fuel_prices_market_last_success'))).strftime('%d.%m.%Y %H:%M:%S') if has_value('sensor.poland_fuel_prices_market_last_success') else 'brak' }}."
+          }
+        },
+        {
+          "type": "conditional",
+          "conditions": [
+            {
+              "entity": "sensor.poland_fuel_prices_government_status",
+              "state_not": "ok"
+            }
+          ],
+          "card": {
+            "type": "markdown",
+            "title": "Ministerstwo Energii — brak aktualnego pobrania",
+            "content": "{% if is_state('sensor.poland_fuel_prices_government_status', 'stale') %}**Wyświetlane ceny pochodzą z ostatniego udanego pobrania.** Nie udało się potwierdzić aktualnych danych u źródła. Ceny z pamięci podręcznej są pokazywane maksymalnie przez 24 godziny; daty ważności limitów nadal obowiązują.{% else %}**Źródło jest niedostępne i nie ma dostatecznie świeżych danych.** Ceny wrócą automatycznie po udanym pobraniu.{% endif %}\n\nOstatnie udane pobranie: {{ as_local(as_datetime(states('sensor.poland_fuel_prices_government_last_success'))).strftime('%d.%m.%Y %H:%M:%S') if has_value('sensor.poland_fuel_prices_government_last_success') else 'brak' }}."
+          }
         },
         {
           "type": "entities",
