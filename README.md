@@ -37,13 +37,17 @@ Każde źródło jest sprawdzane niezależnie **co godzinę**, dodatkowo o lokal
 
 - `last_success` — ostatnie udane pobranie i rozpoznanie danych.
 - `last_attempt` — ostatnia próba odświeżenia, również nieudana.
-- `last_error` i status `ok` / `error` — wynik sprawdzenia źródła.
+- `last_error` i status `ok` / `stale` / `error` — wynik sprawdzenia źródła; `stale` oznacza ostatnie zapisane dane po nieudanym pobraniu.
 - `source_updated_text` — informacja AutoCentrum o aktualizacji jego danych, jeśli jest dostępna.
 - `published_on`, `valid_from`, `valid_to` — daty publikacji i obowiązywania limitów.
 
 Czas pobrania strony nie jest datą aktualizacji danych u wydawcy. Znaczniki czasu są zapisywane ze strefą UTC, a interfejs HA wyświetla je lokalnie. Okres obowiązywania polskich limitów jest liczony według `Europe/Warsaw`.
 
-Po błędzie źródła jego sensory cen stają się `unavailable`. Ostatnie poprawne dane i rzeczywisty czas ich pobrania pozostają w pamięci podręcznej, także po restarcie. Błąd nie nadaje im nowej daty sukcesu. Brak przyszłego komunikatu daje `unknown` dla limitu zapowiedzianego. Brak komunikatu obejmującego dzisiejszą datę daje `unavailable` dla limitu aktualnego. Komponent nie przedłuża samodzielnie ważności historycznych stawek.
+Po błędzie źródła ostatnie poprawne dane są wyświetlane przez maksymalnie **24 godziny od udanego pobrania**, także po restarcie. Status źródła i atrybut `data_status` zmieniają się na `stale`, a `cached: true` oznacza dane z pamięci podręcznej. To ostatnie znane ceny, nie potwierdzenie bieżących cen w niedostępnym serwisie. Błąd nie nadaje im nowej daty sukcesu. Po przekroczeniu 24 godzin ceny stają się `unavailable`, a status zmienia się na `error`.
+
+Przejściowe błędy połączenia są ponawiane do trzech razy w jednym cyklu. Po nieudanym cyklu kolejna próba następuje za 5 minut. Gdy serwer zwróci `Retry-After` (np. przerwa techniczna HTTP 503), integracja nie wykonuje natychmiastowych ponowień i ustawia kolejny cykl nie wcześniej niż wskazał serwer. Po odzyskaniu połączenia wraca godzinny interwał. Ręczny przycisk wymusza sprawdzenie obu źródeł niezależnie od harmonogramu.
+
+Także dla danych z pamięci podręcznej limity rządowe są wybierane wyłącznie według opublikowanych dat obowiązywania. Brak przyszłego komunikatu daje `unknown` dla limitu zapowiedzianego. Brak komunikatu obejmującego dzisiejszą datę daje `unavailable` dla limitu aktualnego. Komponent nie przedłuża samodzielnie ważności historycznych stawek. Atrybuty źródła pokazują wiek danych oraz faktyczny interwał kolejnej próby.
 
 ## Encje
 

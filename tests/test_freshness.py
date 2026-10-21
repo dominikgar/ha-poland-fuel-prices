@@ -5,7 +5,7 @@ import sys
 import types
 from datetime import datetime, timezone
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 import aiohttp
 
 ROOT = Path(__file__).resolve().parents[1] / 'custom_components/poland_fuel_prices'
@@ -24,13 +24,14 @@ def load_coordinator():
     modules['homeassistant.helpers.update_coordinator'].DataUpdateCoordinator = object
     modules['homeassistant.util.dt'].utcnow = lambda: datetime.now(timezone.utc)
     with patch.dict(sys.modules, modules):
-        for name in ['parser', 'coordinator']:
+        for name in ['parser', 'freshness', 'coordinator']:
             spec = importlib.util.spec_from_file_location('fuel_test.' + name, ROOT / (name + '.py'))
             module = importlib.util.module_from_spec(spec)
             sys.modules['fuel_test.' + name] = module
             spec.loader.exec_module(module)
         result = sys.modules['fuel_test.coordinator'].FuelCoordinator
     sys.modules.pop('fuel_test.parser', None)
+    sys.modules.pop('fuel_test.freshness', None)
     sys.modules.pop('fuel_test.coordinator', None)
     return result
 
@@ -80,7 +81,8 @@ def test_outage_does_not_advance_last_success_and_recovery_clears_error():
         assert good['ok'] and good['last_success']
         timestamp = good['last_success']
         coordinator.hass.session.fail = True
-        failed = await coordinator._async_update_data()
+        with patch('asyncio.sleep', new_callable=AsyncMock):
+            failed = await coordinator._async_update_data()
         assert failed['ok'] is False
         assert failed['last_success'] == timestamp
         assert failed['last_error'] == 'test outage'

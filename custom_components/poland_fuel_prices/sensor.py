@@ -4,7 +4,9 @@ from zoneinfo import ZoneInfo
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 from .parser import FUELS, select_record
+from .freshness import CACHE_MAX_AGE, fetch_status, snapshot_age, usable_snapshot
 
 PARALLEL_UPDATES = 0
 
@@ -46,7 +48,7 @@ class FuelSensor(FuelBase):
     @property
     def available(self):
         data = self.coordinator.data or {}
-        if not data.get('ok'):
+        if not usable_snapshot(data, dt_util.utcnow()):
             return False
         if self.coordinator.source == 'government':
             return self.metric == 'gov_next' or self._record() is not None
@@ -63,7 +65,9 @@ class FuelSensor(FuelBase):
     def extra_state_attributes(self):
         data = self.coordinator.data or {}
         attrs = {k: data.get(k) for k in ('source_url', 'last_attempt', 'last_success', 'last_error')}
-        attrs['data_status'] = 'ok' if data.get('ok') else 'fetch_error'
+        attrs['data_status'] = fetch_status(data, dt_util.utcnow())
+        attrs['cached'] = not data.get('ok', False)
+        attrs['cache_max_age_hours'] = CACHE_MAX_AGE.total_seconds() / 3600
         if self.coordinator.source == 'market':
             attrs['source_updated_text'] = data.get('source_updated_text')
             attrs['meaning'] = 'Średnia krajowa' if self.metric == 'avg' else 'Ekstremum średnich wojewódzkich; nie cena konkretnej stacji'
@@ -95,10 +99,15 @@ class SourceSensor(FuelBase):
     def native_value(self):
         data = self.coordinator.data or {}
         if self.metric == 'status':
-            return 'ok' if data.get('ok') else 'error'
+            return fetch_status(data, dt_util.utcnow())
         value = data.get(self.metric)
         return datetime.fromisoformat(value) if value else None
     @property
     def extra_state_attributes(self):
         data = self.coordinator.data or {}
-        return {'source_url': self.coordinator.url, 'last_error': data.get('last_error'), 'refresh_interval_minutes': 60}
+        age = snapshot_age(data, dt_util.utcnow())
+        interval = self.coordinator.update_interval
+        return {'source_url': self.coordinator.url, 'last_error': data.get('last_error'),
+                'refresh_interval_minutes': interval.total_seconds() / 60 if interval else None,
+                'data_age_minutes': round(age.total_seconds() / 60, 1) if age is not None else None,
+                'cache_max_age_hours': CACHE_MAX_AGE.total_seconds() / 3600}
