@@ -84,3 +84,54 @@ def test_changed_price_format_fails_closed():
 def test_no_announcements_rejected():
     with pytest.raises(ValueError):
         p.parse_government('<html>Service temporarily unavailable</html>')
+
+
+@pytest.mark.parametrize('clause,start,end', [
+    ('1 listopada 2026 r.', '2026-11-01', '2026-11-01'),
+    ('w dniu 1 listopada 2026 r.', '2026-11-01', '2026-11-01'),
+    ('w dniach 10-12 października 2026 r.', '2026-10-10', '2026-10-12'),
+    ('w dniach 31 października - 2 listopada 2026 r.', '2026-10-31', '2026-11-02'),
+    ('w dniach 31 października–2 listopada 2026 r.', '2026-10-31', '2026-11-02'),
+    ('w dniach 31 października — 2 listopada 2026 r.', '2026-10-31', '2026-11-02'),
+    ('w dniach 31 grudnia 2026 r. - 2 stycznia 2027 r.', '2026-12-31', '2027-01-02'),
+    ('w dniach 31 grudnia 2026–2 stycznia 2027', '2026-12-31', '2027-01-02'),
+    ('w dniach 28 lutego - 1 marca 2027 r.', '2027-02-28', '2027-03-01'),
+    ('w dniach 29 lutego - 1 marca 2028 r.', '2028-02-29', '2028-03-01'),
+    ('w dniach 31\u00a0października\u00a0-\u00a02 listopada 2026 r.', '2026-10-31', '2026-11-02'),
+])
+def test_explicit_validity_date_formats(clause, start, end):
+    title = 'Maksymalna cena detaliczna paliw obowiązująca ' + clause
+    assert p.effective_dates(title) == (start, end)
+
+
+@pytest.mark.parametrize('clause', [
+    'w dniach 31 nieznanego - 2 listopada 2026 r.',
+    'w dniach 31 października - 2 nieznanego 2026 r.',
+    'w dniach 2 listopada - 31 października 2026 r.',
+    'w dniach 31 grudnia - 2 stycznia 2027 r.',
+    'w dniach 29 lutego - 1 marca 2027 r.',
+    'w dniach 31 kwietnia - 2 maja 2026 r.',
+    'w dniach 31 2026 - 2 listopada 2026 r.',
+    'od 31 października do 2 listopada 2026 r.',
+    'w dniach 31 października / 2 listopada 2026 r.',
+    '1 listopada 2026 r. lub 2 listopada 2026 r.',
+])
+def test_invalid_range_never_degrades_to_last_day(clause):
+    with pytest.raises(ValueError):
+        p.effective_dates('Maksymalna cena detaliczna paliw obowiązująca ' + clause)
+
+
+def test_cross_month_announcement_is_current_through_entire_interval():
+    html = '''<ul><li><span class="date">30.10.2026</span>
+    <a href="/web/energia/maksymalna-cena-detaliczna-paliw-weekend">
+    Maksymalna cena detaliczna paliw obowiązująca w dniach 31 października - 2 listopada 2026 r.</a>
+    <div class="intro">Benzyna 95 - 6,48 zł/l, benzyna 98 - 7,32 zł/l, olej napędowy - 8,15 zł/l.</div>
+    </li></ul>'''
+    records = p.parse_government(html)['records']
+    assert len(records) == 1
+    assert p.select_record(records, date(2026, 10, 30)) is None
+    assert p.select_record(records, date(2026, 10, 30), True) == records[0]
+    for today in [date(2026, 10, 31), date(2026, 11, 1), date(2026, 11, 2)]:
+        assert p.select_record(records, today)['prices'] == {'pb': 6.48, 'pbp': 7.32, 'on': 8.15}
+        assert p.select_record(records, today, True) is None
+    assert p.select_record(records, date(2026, 11, 3)) is None

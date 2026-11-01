@@ -31,6 +31,8 @@ Regionalne minimum i maksimum nie oznaczają najtańszej i najdroższej stacji w
 
 Integracja pobiera listę wiadomości ministerstwa i odczytuje kompletną stawkę, tytuł, datę publikacji oraz jawnie podany okres obowiązywania z zajawki danego komunikatu. `source_url` wskazuje pobraną stronę, a `announcement_url` prowadzi do komunikatu.
 
+Obsługiwane są pojedyncze dni i zakresy dat w jednym miesiącu, między miesiącami (np. 31 października–2 listopada 2026 r.) oraz między latami, gdy oba lata są jawnie podane. Niepoprawne lub niejednoznaczne daty są odrzucane.
+
 ## Aktualność i błędy
 
 Każde źródło jest sprawdzane niezależnie **co godzinę**, dodatkowo o lokalnej północy HA i przyciskiem `button.poland_fuel_prices_refresh`.

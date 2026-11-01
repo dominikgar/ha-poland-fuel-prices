@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.3 — 2026-11-01
+
+- Fix parsing of official validity ranges spanning two months, including the 31 October–2 November announcement.
+- Support explicitly stated start/end years for year-boundary ranges, and retain rejection of invalid or ambiguous dates.
+- Validate the complete validity clause so an unsupported range cannot silently become a single-day limit.
+- Add month/year boundary and government announcement regression tests.
+
 ## 2.0.2 — 2026-10-21
 
 - Retry transient network/DNS failures, recover every five minutes after outages and respect HTTP Retry-After during source maintenance.

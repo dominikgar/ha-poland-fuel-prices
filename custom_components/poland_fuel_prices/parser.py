@@ -69,12 +69,33 @@ def parse_market(html):
 
 
 def effective_dates(title):
-    # Only explicit single-day or same-month ranges. Never infer a legal interval.
-    match = re.search(r'obowiązując\w*\s+(?:w\s+dniach\s+)?(\d{1,2})(?:\s*[-–—]\s*(\d{1,2}))?\s+([a-ząćęłńóśźż]+)\s+(\d{4})', title.casefold())
-    if not match or match[3] not in MONTHS:
+    # Parse the entire validity clause, never just the last day of a range.
+    normalized = ' '.join(title.casefold().split())
+    prefix = re.search(r'\bobowiązując\w*\s+(?:(?:w\s+)?(?:dniach|dniu)\s+)?', normalized)
+    if not prefix:
         raise ValueError('Missing explicit validity dates')
-    start = date(int(match[4]), MONTHS[match[3]], int(match[1]))
-    end = date(int(match[4]), MONTHS[match[3]], int(match[2] or match[1]))
+    clause = normalized[prefix.end():].strip()
+    month = r'[a-ząćęłńóśźż]+'
+    suffix = r'(?:\s*r\.?)?\.?'
+    span = re.fullmatch(
+        rf'(?P<start_day>\d{{1,2}})(?:\s+(?P<start_month>{month}))?'
+        rf'(?:\s+(?P<start_year>\d{{4}})(?:\s*r\.?)?)?'
+        rf'\s*[-–—]\s*(?P<end_day>\d{{1,2}})\s+(?P<end_month>{month})'
+        rf'\s+(?P<end_year>\d{{4}}){suffix}', clause)
+    if span:
+        parts = span.groupdict()
+        start_month = parts['start_month'] or parts['end_month']
+        if (start_month not in MONTHS or parts['end_month'] not in MONTHS
+                or (parts['start_year'] and not parts['start_month'])):
+            raise ValueError('Invalid validity range')
+        start = date(int(parts['start_year'] or parts['end_year']),
+                     MONTHS[start_month], int(parts['start_day']))
+        end = date(int(parts['end_year']), MONTHS[parts['end_month']], int(parts['end_day']))
+    else:
+        single = re.fullmatch(rf'(\d{{1,2}})\s+({month})\s+(\d{{4}}){suffix}', clause)
+        if not single or single[2] not in MONTHS:
+            raise ValueError('Missing explicit validity dates')
+        start = end = date(int(single[3]), MONTHS[single[2]], int(single[1]))
     if end < start:
         raise ValueError('Reversed validity range')
     return start.isoformat(), end.isoformat()
